@@ -9,17 +9,26 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 public class ClienteIniciar : MonoBehaviour
 {
     [SerializeField]
     TMP_InputField servidor, nome;
     [SerializeField]
-    Button conectar, cancelar;
+    Button conectar, cancelar;    
     string acao;
+    BinaryFormatter _binaryFormatter = new BinaryFormatter();
+    MemoryStream _memoryStream;
+    private DataContainer _dataContainer;
 
+    private void Awake()
+    {
+        _dataContainer = GetComponent<DataContainer>();
 
-    // Start is called before the first frame update
+    }
+
     void Start()
     {
         conectar.interactable = true;
@@ -42,8 +51,15 @@ public class ClienteIniciar : MonoBehaviour
     public void Conectar()
     {
         IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(servidor.text), 11000);
-        Byte[] sendBytes = Encoding.ASCII.GetBytes(nome.text + "/" + MltJogador.DataTypes.SpawnPlayer);
-        MltJogador.udpClient.Send(sendBytes, sendBytes.Length, ipEndPoint);
+        //Byte[] sendBytes = Encoding.ASCII.GetBytes(nome.text + "/" + MltJogador.DataTypes.SpawnPlayer);
+        _memoryStream = new MemoryStream();
+        DataPackage temp = GenerateNewPlayer();
+        _dataContainer.CurrentPackageDataBeingUsed = temp;
+        //_dataContainer.ClientPackage = temp;
+        _binaryFormatter.Serialize(_memoryStream, _dataContainer.CurrentPackageDataBeingUsed);
+        byte[] info = _memoryStream.ToArray();
+        MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
+
         conectar.interactable = false;
         cancelar.interactable = true;
     }
@@ -51,8 +67,12 @@ public class ClienteIniciar : MonoBehaviour
     {
         IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(servidor.text), 11000);
         //Byte[] sendBytes = Encoding.ASCII.GetBytes("REMOVER");
-        Byte[] sendBytes = Encoding.ASCII.GetBytes(MltJogador.DataTypes.RemovePlayer.ToString());
-        MltJogador.udpClient.Send(sendBytes, sendBytes.Length, ipEndPoint);
+        //Byte[] sendBytes = Encoding.ASCII.GetBytes(MltJogador.DataTypes.RemovePlayer.ToString());
+        _memoryStream = new MemoryStream();
+        _dataContainer.CurrentPackageDataBeingUsed = MltJogador.clientes[MltJogador.ObterMeuIp()];
+        _binaryFormatter.Serialize(_memoryStream, _dataContainer.CurrentPackageDataBeingUsed);
+        byte[] info = _memoryStream.ToArray();
+        MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
         conectar.interactable = true;
         cancelar.interactable = false;
     }
@@ -60,17 +80,19 @@ public class ClienteIniciar : MonoBehaviour
     void ReceberDados()
     {
         IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-        bool emLoop = true;
         //Blocks until a message returns on this socket from a remote host.
-        while (emLoop)
+        while (true)
         {
-            Byte[] receiveBytes = MltJogador.udpClient.Receive(ref RemoteIpEndPoint);
-            string returnData = Encoding.ASCII.GetString(receiveBytes);
+            _memoryStream = new MemoryStream(MltJogador.udpClient.Receive(ref RemoteIpEndPoint));
+            _dataContainer.CurrentPackageDataBeingUsed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
+            ProcessData();
+            //Byte[] receiveBytes = MltJogador.udpClient.Receive(ref RemoteIpEndPoint);
+            //string returnData = Encoding.ASCII.GetString(receiveBytes);
 
-            if(Enum.TryParse<MltJogador.DataTypes>(returnData, out MltJogador.DataTypes data))
-            {
-                MltJogador.CurrentProcessingDataType = data;
-            }
+            //if(Enum.TryParse<MltJogador.DataTypes>(returnData, out MltJogador.DataTypes data))
+            //{
+            //    MltJogador.CurrentProcessingDataType = data;
+            //}
             //if (returnData == "INICIAR")
             //{
             //    MltJogador.servidor = RemoteIpEndPoint.Address.ToString();
@@ -81,4 +103,34 @@ public class ClienteIniciar : MonoBehaviour
         
  
     }
+
+    private void ProcessData()
+    {
+        switch (_dataContainer.CurrentPackageDataBeingUsed.CurrentDataMode)
+        {
+            case DataPackage.DataState.SpawnPlayer:
+                //_dataContainer.CurrentPackageBeingSend.SpawnLocation = _spawnScript.GetSpawnPoint(_dataContainer.CurrentPackageBeingSend.IP);
+                MltJogador.clientes.Add(_dataContainer.CurrentPackageDataBeingUsed.IP, _dataContainer.CurrentPackageDataBeingUsed);
+                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingUsed.IP);
+                break;
+            case DataPackage.DataState.RemovePlayer:
+                //quit aplication
+                break;
+            case DataPackage.DataState.UpdateValues:
+                break;
+            default:
+                break;
+        }
+    }
+
+    #region DataGenerators
+    private DataPackage GenerateNewPlayer()
+    {
+        return new DataPackage(MltJogador.ObterMeuIp(), 
+            MltJogador.PlayerPrefab, "Jogo", 
+            Vector3.zero, 
+            DataPackage.DataState.SpawnPlayer,
+            Vector3.zero);
+    }
+    #endregion
 }

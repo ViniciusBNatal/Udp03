@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.UI;
+using System.IO;
 
 public class ServidorIniciar : MonoBehaviour
 {
@@ -20,20 +21,20 @@ public class ServidorIniciar : MonoBehaviour
     Button iniciar;
     [SerializeField]
     TextMeshProUGUI listaClientes;
-    //[SerializeField]
-    //private SpawnPoints _spawnScript;
-    //[SerializeField]
-    //private GameObject _playerPrefab;
+    BinaryFormatter _binaryFormatter = new BinaryFormatter();
+    MemoryStream _memoryStream;
+    private DataContainer _dataContainer;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        if(MltJogador.servidor != MltJogador.ObterMeuIp()) Destroy(this);
+        _dataContainer.GetComponent<DataContainer>();
         listaClientes.text = "";
         Thread thread1 = new Thread(ReceberDados);
         thread1.Start();
-        MltJogador.ObterMeuIp();
-        MltJogador.servidor = MltJogador.meuIp;
+        //MltJogador.ObterMeuIp();
+        //MltJogador.servidor = MltJogador.ObterMeuIp();        
     }
 
     // Update is called once per frame
@@ -48,31 +49,32 @@ public class ServidorIniciar : MonoBehaviour
         IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
         while (true)
         {
-            Byte[] receiveBytes = MltJogador.udpClient.Receive(ref RemoteIpEndPoint);
-            string returnData = Encoding.ASCII.GetString(receiveBytes);
-            try
-            {
-                //if (returnData != "REMOVER")
-                //{
-                //    _currentIP = RemoteIpEndPoint.Address.ToString();
-                //    //GenerateNewPlayer(RemoteIpEndPoint.Address.ToString());
-                //}
-                //else
-                //{
-                //    //RemovePlayer(RemoteIpEndPoint.Address.ToString());
-                //}
-                string ip = RemoteIpEndPoint.Address.ToString();
-                if (!MltJogador.CurrentIPsRequests.Contains(ip))
-                {
-                    MltJogador.CurrentIPsRequests.Add(ip);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-            }
-
-
+            //Byte[] receiveBytes = MltJogador.udpClient.Receive(ref RemoteIpEndPoint);
+            _memoryStream = new MemoryStream(MltJogador.udpClient.Receive(ref RemoteIpEndPoint));
+            _dataContainer.CurrentPackageDataBeingUsed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
+            ProcessData();
+            //string returnData = Encoding.ASCII.GetString(receiveBytes);
+            //try
+            //{
+            //    //if (returnData != "REMOVER")
+            //    //{
+            //    //    _currentIP = RemoteIpEndPoint.Address.ToString();
+            //    //    //GenerateNewPlayer(RemoteIpEndPoint.Address.ToString());
+            //    //}
+            //    //else
+            //    //{
+            //    //    //RemovePlayer(RemoteIpEndPoint.Address.ToString());
+            //    //}
+            //    string ip = RemoteIpEndPoint.Address.ToString();
+            //    if (!MltJogador.CurrentIPsRequests.Contains(ip))
+            //    {
+            //        MltJogador.CurrentIPsRequests.Add(ip);
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    Debug.LogException(e);
+            //}
         }
     }
 
@@ -121,14 +123,23 @@ public class ServidorIniciar : MonoBehaviour
 
     public void IniciarJogo()
     {
-        for (int i = 0; i < MltJogador.CurrentIPsRequests.Count; i++)
+        DataPackage[] datas = MltJogador.clientes.Values.ToArray();
+        for (int i = 0; i < datas.Length; i++)
         {
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.CurrentIPsRequests[i]), 11000);
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(datas[i].IP), 11000);
+            for (int a = 0; i < datas.Length; a++)
+            {
+                _memoryStream = new MemoryStream();
+                _dataContainer.CurrentPackageDataBeingUsed = datas[a];
+                _binaryFormatter.Serialize(_memoryStream, _dataContainer.CurrentPackageDataBeingUsed);
+                byte[] info = _memoryStream.ToArray();
+                MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
+            }
             //Byte[] sendBytes = Encoding.ASCII.GetBytes("INICIAR");
-            Byte[] sendBytes = Encoding.ASCII.GetBytes(MltJogador.DataTypes.SpawnPlayer.ToString());
-            MltJogador.udpClient.Send(sendBytes, sendBytes.Length, ipEndPoint);
+            //Byte[] sendBytes = Encoding.ASCII.GetBytes(MltJogador.DataTypes.SpawnPlayer.ToString());
+            //MltJogador.udpClient.Send(sendBytes, sendBytes.Length, ipEndPoint);
         }
-        SceneManager.LoadScene("Jogo");
+        //SceneManager.LoadScene("Jogo");
     }
 
     void PreencheLista()
@@ -142,4 +153,22 @@ public class ServidorIniciar : MonoBehaviour
         listaClientes.text = str;
     }
 
+    #region DataGenerators
+    private void ProcessData()
+    {
+        switch (_dataContainer.CurrentPackageDataBeingUsed.CurrentDataMode)
+        {
+            case DataPackage.DataState.SpawnPlayer:
+                MltJogador.clientes.Add(_dataContainer.CurrentPackageDataBeingUsed.IP, _dataContainer.CurrentPackageDataBeingUsed);
+                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingUsed.IP);
+                break;
+            case DataPackage.DataState.RemovePlayer:
+                break;
+            case DataPackage.DataState.UpdateValues:
+                break;
+            default:
+                break;
+        }
+    }
+    #endregion
 }

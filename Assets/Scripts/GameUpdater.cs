@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
 [RequireComponent(typeof(SpawnPoints))]
 public class GameUpdater : MonoBehaviour
 {
     private SpawnPoints _spawnScript;
-    [SerializeField] GameObject _playerPrefab;
     private string _currentScene;
     private bool _sceneLoaded;
 
@@ -43,11 +43,11 @@ public class GameUpdater : MonoBehaviour
 
     private void UpdateGame()
     {
-        if(MltJogador.CurrentProcessingDataType == MltJogador.DataTypes.SpawnPlayer)
-        {
-           AsyncOperation operation = SceneManager.LoadSceneAsync("Jogo", LoadSceneMode.Single);
-            operation.completed += OnSceneLoad;
-        }
+        //if(MltJogador.CurrentProcessingDataType == MltJogador.DataTypes.SpawnPlayer)
+        //{
+        //   AsyncOperation operation = SceneManager.LoadSceneAsync("Jogo", LoadSceneMode.Single);
+        //    operation.completed += OnSceneLoad;
+        //}
         //if(!string.IsNullOrEmpty(MltJogador.CurrentScene) && _currentScene != MltJogador.CurrentScene)
         //{
         //    _currentScene = MltJogador.CurrentScene;
@@ -62,27 +62,26 @@ public class GameUpdater : MonoBehaviour
 
     private void GenerateNewPlayer(string IP)
     {
-        Vector3 temp = _spawnScript.GetSpawnPoint(IP);
-        GameObject player = Instantiate(_playerPrefab, temp, Quaternion.identity);
+        Vector3 spawnPoint = _spawnScript.GetSpawnPoint(IP);
+        GameObject player = Instantiate(MltJogador.PlayerPrefab, spawnPoint, Quaternion.identity);
         //for testing
-        float randomVal = UnityEngine.Random.Range(1, 100);
-        player.GetComponent<Transform>().localScale = new Vector3(randomVal, randomVal, randomVal);
-        MltJogador.clientes.Add(IP, new MltJogador.PlayerData(player));
-        MltJogador.CurrentProcessingDataType = MltJogador.DataTypes.UpdateValues;
+        //float randomVal = UnityEngine.Random.Range(1, 5);
+        //player.GetComponent<Transform>().localScale = new Vector3(randomVal, randomVal, randomVal);
+        MltJogador.clientes[IP].PlayerObject = player;
+        MltJogador.clientes[IP].SpawnLocation = spawnPoint;
     }
 
     private void RemovePlayer(string IP)
     {
-        if (MltJogador.clientes.ContainsKey(IP))
+        if (MltJogador.clientes.TryGetValue(IP, out DataPackage data))
         {
             _spawnScript.ClearSpawnPointUsage(IP);
-            Destroy(MltJogador.clientes[IP].Obj);
+            Destroy(data.PlayerObject);
             MltJogador.clientes.Remove(IP);
         }
         else
         {
             Debug.LogError("Trying to delete a player that doesnt exist");
         }
-        MltJogador.CurrentProcessingDataType = MltJogador.DataTypes.UpdateValues;
     }
 }
