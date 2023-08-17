@@ -11,70 +11,90 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.Linq;
 
+[RequireComponent(typeof(DataContainer))]
 public class ClienteIniciar : MonoBehaviour
 {
-    [SerializeField]
-    TMP_InputField servidor, nome;
-    [SerializeField]
-    Button conectar, cancelar;    
-    string acao;
     BinaryFormatter _binaryFormatter = new BinaryFormatter();
     MemoryStream _memoryStream;
     private DataContainer _dataContainer;
+    private Thread _thread;
 
     private void Awake()
     {
         _dataContainer = GetComponent<DataContainer>();
-
+        MltJogador.ClientScript = this;
     }
 
     void Start()
     {
-        conectar.interactable = true;
-        cancelar.interactable = false;
-        Thread thread1 = new Thread(ReceberDados);
-        thread1.Start();
+        _thread = new Thread(ReceberDados);
+        _thread.Start();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Conectar(string serverIP)
     {
-        switch(acao)
+        if (MltJogador.servidor == MltJogador.ObterMeuIp())
         {
-            case "INICIAR":
-                SceneManager.LoadScene("Jogo");
-                break;
+            DataPackage temp = GenerateSpawnPlayerPackage();
+            ServidorIniciar servidor = FindObjectOfType<ServidorIniciar>();
+            servidor.GetComponent<DataContainer>().CurrentPackageDataBeingProcessed = temp;
+            servidor.ProcessData();
+        }
+        else
+        {
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), 11000);
+            _memoryStream = new MemoryStream();
+            DataPackage temp = GenerateSpawnPlayerPackage();
+            //_dataContainer.CurrentPackageDataBeingProcessed = temp;
+            _binaryFormatter.Serialize(_memoryStream, /*_dataContainer.CurrentPackageDataBeingProcessed*/temp);
+            byte[] info = _memoryStream.ToArray();
+            MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
+            MltJogador.servidor = serverIP;
+        }
+
+    }
+    public void Desconectar(string serverIP)
+    {
+        if (MltJogador.servidor == MltJogador.ObterMeuIp())
+        {
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.servidor), 11000);
+            string[] IPs = MltJogador.Players.Keys.ToArray();
+            for (int i = 0; i < MltJogador.Players.Count; i++)
+            {
+                if(IPs[i] != MltJogador.servidor)
+                {
+                    _memoryStream = new MemoryStream();
+                    //_dataContainer.CurrentPackageDataBeingProcessed = MltJogador.Players[MltJogador.ObterMeuIp()];
+                    MltJogador.Players[IPs[i]].CurrentDataMode = DataPackage.DataState.RemovePlayer;
+                    _binaryFormatter.Serialize(_memoryStream, /*_dataContainer.CurrentPackageDataBeingProcessed*/MltJogador.Players[IPs[i]]);
+                    byte[] info = _memoryStream.ToArray();
+                    MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
+                }
+            }
+        }
+        else
+        {
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), 11000);
+            _memoryStream = new MemoryStream();
+            //_dataContainer.CurrentPackageDataBeingProcessed = MltJogador.Players[MltJogador.ObterMeuIp()];
+            MltJogador.Players[MltJogador.ObterMeuIp()] = GenerateRemovePlayerPackage();
+            _binaryFormatter.Serialize(_memoryStream, /*_dataContainer.CurrentPackageDataBeingProcessed*/MltJogador.Players[MltJogador.ObterMeuIp()]);
+            byte[] info = _memoryStream.ToArray();
+            MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
+            MltJogador.servidor = null;
         }
     }
 
-    public void Conectar()
+    public void MovmentDataCollection(Vector3 velocity)
     {
-        IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(servidor.text), 11000);
-        //Byte[] sendBytes = Encoding.ASCII.GetBytes(nome.text + "/" + MltJogador.DataTypes.SpawnPlayer);
+        IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.servidor), 11000);
         _memoryStream = new MemoryStream();
-        DataPackage temp = GenerateNewPlayer();
-        _dataContainer.CurrentPackageDataBeingUsed = temp;
-        //_dataContainer.ClientPackage = temp;
-        _binaryFormatter.Serialize(_memoryStream, _dataContainer.CurrentPackageDataBeingUsed);
+        _dataContainer.CurrentPackageDataBeingProcessed = GenerateMovmentPackage(velocity);
+        _binaryFormatter.Serialize(_memoryStream, _dataContainer.CurrentPackageDataBeingProcessed);
         byte[] info = _memoryStream.ToArray();
         MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
-
-        conectar.interactable = false;
-        cancelar.interactable = true;
-    }
-    public void Desconectar()
-    {
-        IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(servidor.text), 11000);
-        //Byte[] sendBytes = Encoding.ASCII.GetBytes("REMOVER");
-        //Byte[] sendBytes = Encoding.ASCII.GetBytes(MltJogador.DataTypes.RemovePlayer.ToString());
-        _memoryStream = new MemoryStream();
-        _dataContainer.CurrentPackageDataBeingUsed = MltJogador.clientes[MltJogador.ObterMeuIp()];
-        _binaryFormatter.Serialize(_memoryStream, _dataContainer.CurrentPackageDataBeingUsed);
-        byte[] info = _memoryStream.ToArray();
-        MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
-        conectar.interactable = true;
-        cancelar.interactable = false;
     }
 
     void ReceberDados()
@@ -84,53 +104,56 @@ public class ClienteIniciar : MonoBehaviour
         while (true)
         {
             _memoryStream = new MemoryStream(MltJogador.udpClient.Receive(ref RemoteIpEndPoint));
-            _dataContainer.CurrentPackageDataBeingUsed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
+            _dataContainer.CurrentPackageDataBeingProcessed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
             ProcessData();
-            //Byte[] receiveBytes = MltJogador.udpClient.Receive(ref RemoteIpEndPoint);
-            //string returnData = Encoding.ASCII.GetString(receiveBytes);
-
-            //if(Enum.TryParse<MltJogador.DataTypes>(returnData, out MltJogador.DataTypes data))
-            //{
-            //    MltJogador.CurrentProcessingDataType = data;
-            //}
-            //if (returnData == "INICIAR")
-            //{
-            //    MltJogador.servidor = RemoteIpEndPoint.Address.ToString();
-            //    emLoop = false;
-            //    acao = "INICIAR";
-            //}
         }
-        
- 
     }
 
     private void ProcessData()
     {
-        switch (_dataContainer.CurrentPackageDataBeingUsed.CurrentDataMode)
+        switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
-                //_dataContainer.CurrentPackageBeingSend.SpawnLocation = _spawnScript.GetSpawnPoint(_dataContainer.CurrentPackageBeingSend.IP);
-                MltJogador.clientes.Add(_dataContainer.CurrentPackageDataBeingUsed.IP, _dataContainer.CurrentPackageDataBeingUsed);
-                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingUsed.IP);
+                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, _dataContainer.CurrentPackageDataBeingProcessed);
+                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
                 break;
             case DataPackage.DataState.RemovePlayer:
                 //quit aplication
+                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].CurrentDataMode = DataPackage.DataState.RemovePlayer;
+                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
                 break;
             case DataPackage.DataState.UpdateValues:
                 break;
-            default:
-                break;
+                //case DataPackage.DataState.Neutral:
+                //    break;
         }
     }
 
     #region DataGenerators
-    private DataPackage GenerateNewPlayer()
+    private DataPackage GenerateSpawnPlayerPackage()
     {
-        return new DataPackage(MltJogador.ObterMeuIp(), 
-            MltJogador.PlayerPrefab, "Jogo", 
-            Vector3.zero, 
-            DataPackage.DataState.SpawnPlayer,
-            Vector3.zero);
+        return new DataPackage(MltJogador.ObterMeuIp(),
+            MltJogador.PlayerPrefab, "Jogo",
+            Vector3.zero,
+            DataPackage.DataState.SpawnPlayer
+            /*Vector3.zero*/);
+    }
+
+    private DataPackage GenerateRemovePlayerPackage()
+    {
+        return new DataPackage(MltJogador.ObterMeuIp(),
+            MltJogador.PlayerPrefab, "Entrada",
+            Vector3.zero,
+            DataPackage.DataState.RemovePlayer);
+    }
+
+    private DataPackage GenerateMovmentPackage(Vector3 direction)
+    {
+        return new DataPackage(MltJogador.ObterMeuIp(),
+            MltJogador.PlayerPrefab, MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene,
+            direction,
+            DataPackage.DataState.UpdateValues
+            /*Vector3.zero*/);
     }
     #endregion
 }

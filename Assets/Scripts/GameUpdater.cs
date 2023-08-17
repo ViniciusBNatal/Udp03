@@ -8,8 +8,8 @@ using System;
 public class GameUpdater : MonoBehaviour
 {
     private SpawnPoints _spawnScript;
-    private string _currentScene;
-    private bool _sceneLoaded;
+    private string _sceneAfterLoad;
+    private bool _sceneIsLoading;
 
     private void Awake()
     {
@@ -24,60 +24,104 @@ public class GameUpdater : MonoBehaviour
 
     private void UpdatePlayers()
     {
-        if (_sceneLoaded)
+        if (!_sceneIsLoading && MltJogador.CurrentScene == "Jogo")
         {
             for (int i = 0; i < MltJogador.CurrentIPsRequests.Count; i++)
             {
-                if (MltJogador.clientes.ContainsKey(MltJogador.CurrentIPsRequests[i]))
+                if (MltJogador.Players.ContainsKey(MltJogador.CurrentIPsRequests[i]))
                 {
-                    RemovePlayer(MltJogador.CurrentIPsRequests[i]);
+                    switch (MltJogador.Players[MltJogador.CurrentIPsRequests[i]].CurrentDataMode)
+                    {
+                        case DataPackage.DataState.SpawnPlayer:
+                            GenerateNewPlayer(MltJogador.CurrentIPsRequests[i]);
+                            break;
+                        case DataPackage.DataState.RemovePlayer:
+                            RemovePlayer(MltJogador.CurrentIPsRequests[i]);
+                            break;
+                        case DataPackage.DataState.UpdateValues:
+                            break;
+                            //case DataPackage.DataState.Neutral:
+                            //    break;
+                    }
+                    MltJogador.CurrentIPsRequests.Remove(MltJogador.CurrentIPsRequests[i]);
+                    //MltJogador.Players[MltJogador.CurrentIPsRequests[i]].CurrentDataMode = DataPackage.DataState.Neutral;
                 }
-                else
-                {
-                    GenerateNewPlayer(MltJogador.CurrentIPsRequests[i]);
-                }
-                MltJogador.CurrentIPsRequests.Remove(MltJogador.CurrentIPsRequests[i]);
             }
         }
     }
 
     private void UpdateGame()
     {
-        //if(MltJogador.CurrentProcessingDataType == MltJogador.DataTypes.SpawnPlayer)
-        //{
-        //   AsyncOperation operation = SceneManager.LoadSceneAsync("Jogo", LoadSceneMode.Single);
-        //    operation.completed += OnSceneLoad;
-        //}
-        //if(!string.IsNullOrEmpty(MltJogador.CurrentScene) && _currentScene != MltJogador.CurrentScene)
-        //{
-        //    _currentScene = MltJogador.CurrentScene;
-        //    SceneManager.LoadScene(_currentScene);
-        //}
+        if (MltJogador.Players.ContainsKey(MltJogador.ObterMeuIp()) && !string.IsNullOrEmpty(MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene) && MltJogador.CurrentScene != MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene)
+        {
+            if (MltJogador.Players[MltJogador.ObterMeuIp()].CurrentDataMode == DataPackage.DataState.SpawnPlayer)
+            {
+                _sceneIsLoading = true;
+                _sceneAfterLoad = MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene;
+                AsyncOperation operation = SceneManager.LoadSceneAsync(_sceneAfterLoad, LoadSceneMode.Single);
+                operation.completed += OnSceneLoad;
+            }
+            else if (MltJogador.Players[MltJogador.ObterMeuIp()].CurrentDataMode == DataPackage.DataState.RemovePlayer)
+            {
+                _sceneAfterLoad = MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene;
+                MltJogador.Players.Clear();
+                MltJogador.servidor = null;
+                MltJogador.CurrentIPsRequests.Clear();
+                _sceneIsLoading = true;
+                AsyncOperation operation = SceneManager.LoadSceneAsync(_sceneAfterLoad, LoadSceneMode.Single);
+                operation.completed += OnSceneLoad;
+            }
+        }
     }
 
     private void OnSceneLoad(AsyncOperation operation)
     {
-        _sceneLoaded = true;
+        MltJogador.CurrentScene = _sceneAfterLoad;
+        _sceneIsLoading = false;
     }
 
     private void GenerateNewPlayer(string IP)
     {
         Vector3 spawnPoint = _spawnScript.GetSpawnPoint(IP);
         GameObject player = Instantiate(MltJogador.PlayerPrefab, spawnPoint, Quaternion.identity);
+        player.GetComponent<MeshRenderer>().material.color = GenerateColorByIP(IP);
         //for testing
         //float randomVal = UnityEngine.Random.Range(1, 5);
         //player.GetComponent<Transform>().localScale = new Vector3(randomVal, randomVal, randomVal);
-        MltJogador.clientes[IP].PlayerObject = player;
-        MltJogador.clientes[IP].SpawnLocation = spawnPoint;
+        MltJogador.Players[IP].PlayerObject = player;
+        //MltJogador.Players[IP].SpawnLocation = spawnPoint;
+    }
+
+    private Color GenerateColorByIP(string IP)
+    {
+        char[] chars = IP.ToCharArray();
+        string thirdPartText = null;
+        int.TryParse((chars[0] + chars[1] + chars[2]).ToString(), out int firstPart);
+        int.TryParse((chars[4] + chars[5] + chars[6]).ToString(), out int secondPart);
+        for (int i = 7; i < chars.Length; i++)
+        {
+            string temp = chars[i].ToString();
+            if (int.TryParse(temp, out int num))
+            {
+                thirdPartText += temp;
+                if (thirdPartText.Length == 3) break;
+            }
+        }
+        int.TryParse(thirdPartText, out int thirdPart);
+
+        return new Color(firstPart - thirdPart, secondPart + thirdPart, (firstPart + secondPart + thirdPart) / 3);
     }
 
     private void RemovePlayer(string IP)
     {
-        if (MltJogador.clientes.TryGetValue(IP, out DataPackage data))
+        if (MltJogador.Players.TryGetValue(IP, out DataPackage data))
         {
-            _spawnScript.ClearSpawnPointUsage(IP);
-            Destroy(data.PlayerObject);
-            MltJogador.clientes.Remove(IP);
+            if (IP != MltJogador.ObterMeuIp())
+            {
+                _spawnScript.ClearSpawnPointUsage(IP);
+                Destroy(data.PlayerObject);
+                MltJogador.Players.Remove(IP);
+            }
         }
         else
         {

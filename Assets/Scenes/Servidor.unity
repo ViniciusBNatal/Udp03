@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.3069224, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -123,6 +123,64 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &559349659
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 559349662}
+  - component: {fileID: 559349661}
+  - component: {fileID: 559349660}
+  m_Layer: 0
+  m_Name: GameUpdater
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &559349660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559349659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4ce2df7236cde34f866092a6f7e77dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &559349661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559349659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0686945668ed18e4c8cbb7f9a3071c83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _spawnPoints: []
+--- !u!4 &559349662
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559349659}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &593703392
 GameObject:
   m_ObjectHideFlags: 0
@@ -258,6 +316,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 593703392}
   m_CullTransparentMesh: 1
+--- !u!1 &662311310
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 662311314}
+  - component: {fileID: 662311313}
+  - component: {fileID: 662311312}
+  - component: {fileID: 662311311}
+  m_Layer: 0
+  m_Name: ClientScript
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &662311311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662311310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a33f64e83262a4849b4e4527133b057b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  servidor: {fileID: 0}
+  nome: {fileID: 0}
+  conectar: {fileID: 0}
+  cancelar: {fileID: 0}
+  _clientScript: {fileID: 662311312}
+--- !u!114 &662311312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662311310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a1e42a11e0527944950a25940bc5f36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &662311313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662311310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b830141481228a48b26838ad6333298, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &662311314
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662311310}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1220484209
 GameObject:
   m_ObjectHideFlags: 0
@@ -706,9 +839,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2045378890}
-        m_TargetAssemblyTypeName: ServidorIniciar, Assembly-CSharp
-        m_MethodName: IniciarJogo
+      - m_Target: {fileID: 662311311}
+        m_TargetAssemblyTypeName: ClientMenuUI, Assembly-CSharp
+        m_MethodName: ConectForServer
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 2045378891}
+        m_TargetAssemblyTypeName: ServerMenuUI, Assembly-CSharp
+        m_MethodName: StartGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -922,6 +1067,7 @@ GameObject:
   - component: {fileID: 2045378886}
   - component: {fileID: 2045378890}
   - component: {fileID: 2045378891}
+  - component: {fileID: 2045378893}
   - component: {fileID: 2045378892}
   m_Layer: 5
   m_Name: Canvas
@@ -1026,8 +1172,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19178ab5676ab194690517fa9969913a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  iniciar: {fileID: 1643165966}
-  listaClientes: {fileID: 593703394}
 --- !u!114 &2045378891
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1037,19 +1181,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 2045378885}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0686945668ed18e4c8cbb7f9a3071c83, type: 3}
+  m_Script: {fileID: 11500000, guid: 88b0b19060dc314479d992ab4f883c6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _spawnPoints:
-  - SpawnPoint: {x: -7.91, y: 0, z: 0}
-    InUse: 0
-  - SpawnPoint: {x: 3.37, y: 0, z: 0}
-    InUse: 0
-  - SpawnPoint: {x: 0, y: 3.37, z: 0}
-    InUse: 0
-  - SpawnPoint: {x: 0, y: -15.84, z: 0}
-    InUse: 0
+  iniciar: {fileID: 1643165966}
+  listaClientes: {fileID: 1607821918}
+  _serverScript: {fileID: 2045378890}
 --- !u!114 &2045378892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2045378885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b830141481228a48b26838ad6333298, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2045378893
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
