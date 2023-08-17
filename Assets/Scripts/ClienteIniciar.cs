@@ -35,6 +35,7 @@ public class ClienteIniciar : MonoBehaviour
 
     public void Conectar(string serverIP)
     {
+        //if this machine is the Host, will go directly to precessing data, no need to send data
         if (MltJogador.servidor == MltJogador.ObterMeuIp())
         {
             DataPackage temp = GenerateSpawnPlayerPackage();
@@ -59,10 +60,10 @@ public class ClienteIniciar : MonoBehaviour
     {
         if (MltJogador.servidor == MltJogador.ObterMeuIp())
         {
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.servidor), 11000);
             string[] IPs = MltJogador.Players.Keys.ToArray();
             for (int i = 0; i < MltJogador.Players.Count; i++)
             {
+                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(IPs[i]), 11000);
                 if(IPs[i] != MltJogador.servidor)
                 {
                     _memoryStream = new MemoryStream();
@@ -87,11 +88,11 @@ public class ClienteIniciar : MonoBehaviour
         }
     }
 
-    public void MovmentDataCollection(Vector3 velocity)
+    public void MovmentDataCollection(Vector3 direction)
     {
         IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.servidor), 11000);
         _memoryStream = new MemoryStream();
-        _dataContainer.CurrentPackageDataBeingProcessed = GenerateMovmentPackage(velocity);
+        _dataContainer.CurrentPackageDataBeingProcessed = GenerateMovmentPackage(direction);
         _binaryFormatter.Serialize(_memoryStream, _dataContainer.CurrentPackageDataBeingProcessed);
         byte[] info = _memoryStream.ToArray();
         MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
@@ -115,18 +116,17 @@ public class ClienteIniciar : MonoBehaviour
         {
             case DataPackage.DataState.SpawnPlayer:
                 MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, _dataContainer.CurrentPackageDataBeingProcessed);
-                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
                 break;
             case DataPackage.DataState.RemovePlayer:
-                //quit aplication
                 MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].CurrentDataMode = DataPackage.DataState.RemovePlayer;
-                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
                 break;
             case DataPackage.DataState.UpdateValues:
+                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;                
                 break;
                 //case DataPackage.DataState.Neutral:
                 //    break;
         }
+        MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
     }
 
     #region DataGenerators
@@ -135,24 +135,27 @@ public class ClienteIniciar : MonoBehaviour
         return new DataPackage(MltJogador.ObterMeuIp(),
             MltJogador.PlayerPrefab, "Jogo",
             Vector3.zero,
-            DataPackage.DataState.SpawnPlayer
+            DataPackage.DataState.SpawnPlayer,
+            null
             /*Vector3.zero*/);
     }
 
     private DataPackage GenerateRemovePlayerPackage()
     {
         return new DataPackage(MltJogador.ObterMeuIp(),
-            MltJogador.PlayerPrefab, "Entrada",
+            null, "Entrada",
             Vector3.zero,
-            DataPackage.DataState.RemovePlayer);
+            DataPackage.DataState.RemovePlayer,
+            null);
     }
 
     private DataPackage GenerateMovmentPackage(Vector3 direction)
     {
         return new DataPackage(MltJogador.ObterMeuIp(),
-            MltJogador.PlayerPrefab, MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene,
+            null, MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene,
             direction,
-            DataPackage.DataState.UpdateValues
+            DataPackage.DataState.UpdateValues,
+            null
             /*Vector3.zero*/);
     }
     #endregion

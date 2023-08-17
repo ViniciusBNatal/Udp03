@@ -22,7 +22,7 @@ public class DataPackage
         UpdateValues
         //Neutral
     };    
-    public DataPackage(string ip, GameObject gobj, string sceneName, Vector3 direction, DataState dataState/*, Vector3 spawnPoint*/)
+    public DataPackage(string ip, GameObject gobj, string sceneName, Vector3 direction, DataState dataState, PlayerMovment playerMovment/*, Vector3 spawnPoint*/)
     {
         IP = ip;
         PlayerObject = gobj;
@@ -30,6 +30,6 @@ public class DataPackage
         PlayerDirection = direction;
         CurrentDataMode = dataState;
         //SpawnLocation = spawnPoint;
-        PlayerMovment = PlayerObject.GetComponent<PlayerMovment>();
+        PlayerMovment = playerMovment;
     }
 }

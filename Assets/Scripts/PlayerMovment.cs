@@ -15,21 +15,37 @@ public class PlayerMovment : MonoBehaviour
     }
 
     private void Update()
-    {        
-        float movX = Input.GetAxis("Horizontal");
-        float movZ = Input.GetAxis("Vertical");
-        float up = Input.GetKeyDown(KeyCode.Q) ? 1 : 0;
-        float down = Input.GetKeyDown(KeyCode.E) ? -1 : 0;
-        float movY = up + down;
+    {
+        UpdateInputs();
 
-        _rb.velocity = new Vector3(movX, movY, movZ) * _speed;
+        MltJogador.ClientScript.MovmentDataCollection(_currenDirection);
+    }
 
-        //MltJogador.ClientScript
+    private void FixedUpdate()
+    {
+        _rb.velocity = _currenDirection * _speed;
+    }
 
+    private void UpdateInputs()
+    {
+        if (_beingControledLocaly)
+        {
+            float movX = Input.GetAxis("Horizontal");
+            float movZ = Input.GetAxis("Vertical");
+            float up = Input.GetKeyDown(KeyCode.Q) ? 1 : 0;
+            float down = Input.GetKeyDown(KeyCode.E) ? -1 : 0;
+            float movY = up + down;
+            SetCurrentDirection(new Vector3(movX, movY, movZ).normalized);
+        }
     }
 
     public void SetCurrentDirection(Vector3 dir)
     {
         _currenDirection = dir;
+    }
+
+    public void SetBeingControledLocaly(bool beingControled)
+    {
+        _beingControledLocaly = beingControled;
     }
 }

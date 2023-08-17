@@ -39,6 +39,7 @@ public class GameUpdater : MonoBehaviour
                             RemovePlayer(MltJogador.CurrentIPsRequests[i]);
                             break;
                         case DataPackage.DataState.UpdateValues:
+                            UpdatePlayerMovment(MltJogador.CurrentIPsRequests[i]);
                             break;
                             //case DataPackage.DataState.Neutral:
                             //    break;
@@ -89,6 +90,8 @@ public class GameUpdater : MonoBehaviour
         //float randomVal = UnityEngine.Random.Range(1, 5);
         //player.GetComponent<Transform>().localScale = new Vector3(randomVal, randomVal, randomVal);
         MltJogador.Players[IP].PlayerObject = player;
+        MltJogador.Players[IP].PlayerMovment = player.GetComponent<PlayerMovment>();
+        if (IP == MltJogador.ObterMeuIp()) MltJogador.Players[IP].PlayerMovment.SetBeingControledLocaly(true);
         //MltJogador.Players[IP].SpawnLocation = spawnPoint;
     }
 
@@ -114,18 +117,20 @@ public class GameUpdater : MonoBehaviour
 
     private void RemovePlayer(string IP)
     {
-        if (MltJogador.Players.TryGetValue(IP, out DataPackage data))
+        if (IP != MltJogador.ObterMeuIp())
         {
-            if (IP != MltJogador.ObterMeuIp())
-            {
-                _spawnScript.ClearSpawnPointUsage(IP);
-                Destroy(data.PlayerObject);
-                MltJogador.Players.Remove(IP);
-            }
+            _spawnScript.ClearSpawnPointUsage(IP);
+            Destroy(MltJogador.Players[IP].PlayerObject);
+            MltJogador.Players.Remove(IP);
         }
         else
         {
             Debug.LogError("Trying to delete a player that doesnt exist");
         }
+    }
+
+    private void UpdatePlayerMovment(string IP)
+    {
+        MltJogador.Players[IP].PlayerMovment.SetCurrentDirection(MltJogador.Players[IP].PlayerDirection);
     }
 }

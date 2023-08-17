@@ -24,7 +24,7 @@ public class ServerMenuUI : MonoBehaviour
 
     public void StartGame()
     {
-        _serverScript.IniciarJogo();
+        _serverScript.SendStartGame();
     }
 
     void PreencheLista()

@@ -22,6 +22,8 @@ public class ServidorIniciar : MonoBehaviour
     MemoryStream _memoryStream;
     private DataContainer _dataContainer;
     private Thread _thread;
+    private const float _sendDataFrequency = .02f;
+    private float _timeSinceLastDataSend;
 
     private void Awake()
     {
@@ -36,6 +38,16 @@ public class ServidorIniciar : MonoBehaviour
         _thread.Start();
     }
 
+    private void Update()
+    {
+        _timeSinceLastDataSend += Time.deltaTime;
+        if(_timeSinceLastDataSend >= _sendDataFrequency)
+        {
+            SendChangePlayerMovment();
+            SendRemovePlayerData();
+        }
+    }
+
     void ReceberDados()
     {
         IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
@@ -47,12 +59,12 @@ public class ServidorIniciar : MonoBehaviour
         }
     }
 
-    public void IniciarJogo()
+    public void SendStartGame()
     {
         DataPackage[] datas = MltJogador.Players.Values.ToArray();
         for (int i = 0; i < datas.Length; i++)
         {
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(datas[i].IP), 11000);
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(datas[i].IP), PORT);
             for (int a = 0; i < datas.Length; a++)
             {
                 _memoryStream = new MemoryStream();
@@ -68,10 +80,21 @@ public class ServidorIniciar : MonoBehaviour
     {
         for (int i = 0; i < MltJogador.CurrentIPsRequests.Count; i++)
         {
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.CurrentIPsRequests[i]), 11000);
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.CurrentIPsRequests[i]), PORT);
             _memoryStream = new MemoryStream();
-            //_dataContainer.CurrentPackageDataBeingProcessed = MltJogador.Players[MltJogador.CurrentIPsRequests[i]];
-            _binaryFormatter.Serialize(_memoryStream, /*_dataContainer.CurrentPackageDataBeingProcessed*/MltJogador.Players[MltJogador.CurrentIPsRequests[i]]);
+            _binaryFormatter.Serialize(_memoryStream, MltJogador.Players[MltJogador.CurrentIPsRequests[i]]);
+            byte[] info = _memoryStream.ToArray();
+            MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
+        }
+    }
+
+    private void SendChangePlayerMovment()
+    {
+        for (int i = 0; i < MltJogador.CurrentIPsRequests.Count; i++)
+        {
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.CurrentIPsRequests[i]), PORT);
+            _memoryStream = new MemoryStream();
+            _binaryFormatter.Serialize(_memoryStream, MltJogador.Players[MltJogador.CurrentIPsRequests[i]]);
             byte[] info = _memoryStream.ToArray();
             MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
         }
@@ -80,19 +103,18 @@ public class ServidorIniciar : MonoBehaviour
     #region DataGenerators
     public void ProcessData()
     {
+        MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
         switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
                 MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, _dataContainer.CurrentPackageDataBeingProcessed);
-                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
                 break;
             case DataPackage.DataState.RemovePlayer:
                 MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].CurrentDataMode = DataPackage.DataState.RemovePlayer;
-                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
-                SendRemovePlayerData();
+                //SendRemovePlayerData();
                 break;
             case DataPackage.DataState.UpdateValues:
-                MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
+                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;
                 break;
             //case DataPackage.DataState.Neutral:
             //    break;
