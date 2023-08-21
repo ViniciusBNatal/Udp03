@@ -40,7 +40,8 @@ public class ClienteIniciar : MonoBehaviour
         {
             DataPackage temp = GenerateSpawnPlayerPackage();
             ServidorIniciar servidor = FindObjectOfType<ServidorIniciar>();
-            servidor.GetComponent<DataContainer>().CurrentPackageDataBeingProcessed = temp;
+            //servidor.GetComponent<DataContainer>().CurrentPackageDataBeingProcessed = temp;
+            servidor.SetCurrentDataPackage(temp);
             servidor.ProcessData();
         }
         else

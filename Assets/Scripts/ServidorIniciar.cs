@@ -119,6 +119,11 @@ public class ServidorIniciar : MonoBehaviour
         }
     }
 
+    public void SetCurrentDataPackage(DataPackage data)
+    {
+        _currentDataPackage = data;
+    }
+
     #region DataGenerators
     public void ProcessData()
     {
