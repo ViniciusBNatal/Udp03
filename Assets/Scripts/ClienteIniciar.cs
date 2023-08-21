@@ -38,6 +38,7 @@ public class ClienteIniciar : MonoBehaviour
     {        //if this machine is the Host, will go directly to precessing data, no need to send data
         if (MltJogador.servidor == MltJogador.ObterMeuIp())
         {
+            Debug.LogWarning("host entrando na aprtida");
             DataPackage temp = GenerateSpawnPlayerPackage();
             ServidorIniciar servidor = FindObjectOfType<ServidorIniciar>();
             //servidor.GetComponent<DataContainer>().CurrentPackageDataBeingProcessed = temp;
@@ -121,7 +122,7 @@ public class ClienteIniciar : MonoBehaviour
         {
             case DataPackage.DataState.SpawnPlayer:
                 /*if (!MltJogador.Players.ContainsKey(_dataContainer.CurrentPackageDataBeingProcessed.IP))*/
-                MltJogador.Players.Add(_currentDataPackage.IP, new MltJogador.InGameData(_currentDataPackage, null, null));
+                if (!MltJogador.Players.ContainsKey(_currentDataPackage.IP)) MltJogador.Players.Add(_currentDataPackage.IP, new MltJogador.InGameData(_currentDataPackage, null, null));
                 break;
             case DataPackage.DataState.RemovePlayer:
                 MltJogador.Players[_currentDataPackage.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
