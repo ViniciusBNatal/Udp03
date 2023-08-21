@@ -65,7 +65,7 @@ public class ClienteIniciar : MonoBehaviour
             for (int i = 0; i < MltJogador.Players.Count; i++)
             {
                 IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(IPs[i]), 11000);
-                if(IPs[i] != MltJogador.servidor)
+                if (IPs[i] != MltJogador.servidor)
                 {
                     _memoryStream = new MemoryStream();
                     //_dataContainer.CurrentPackageDataBeingProcessed = MltJogador.Players[MltJogador.ObterMeuIp()];
@@ -116,13 +116,13 @@ public class ClienteIniciar : MonoBehaviour
         switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
-                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null, null));
+                if (!MltJogador.Players.ContainsKey(_dataContainer.CurrentPackageDataBeingProcessed.IP)) MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null, null));
                 break;
             case DataPackage.DataState.RemovePlayer:
                 MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
                 break;
             case DataPackage.DataState.UpdateValues:
-                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;                
+                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;
                 break;
                 //case DataPackage.DataState.Neutral:
                 //    break;
@@ -153,7 +153,7 @@ public class ClienteIniciar : MonoBehaviour
         return new DataPackage(MltJogador.ObterMeuIp(),
             MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene,
             direction,
-            DataPackage.DataState.UpdateValues            
+            DataPackage.DataState.UpdateValues
             /*Vector3.zero*/);
     }
     #endregion
