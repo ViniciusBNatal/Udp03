@@ -11,11 +11,11 @@ public class DataContainer : MonoBehaviour
 public class DataPackage
 {
     public string IP;
-    public GameObject PlayerObject;
+    //public GameObject PlayerObject;
     public PlayerMovment PlayerMovment;
     public string CurrentScene;
-    public Vector3 PlayerDirection;
-    public Vector3 SpawnLocation;
+    public float[] PlayerDirection = new float[3];
+    public float[] SpawnLocation = new float[3];
     public DataState CurrentDataMode;
     public enum DataState
     {
@@ -24,10 +24,10 @@ public class DataPackage
         UpdateValues
         //Neutral
     };    
-    public DataPackage(string ip, GameObject gobj, string sceneName, Vector3 direction, DataState dataState, PlayerMovment playerMovment/*, Vector3 spawnPoint*/)
+    public DataPackage(string ip, /*GameObject gobj,*/ string sceneName, float[] direction, DataState dataState, PlayerMovment playerMovment/*, Vector3 spawnPoint*/)
     {
         IP = ip;
-        PlayerObject = gobj;
+        //PlayerObject = gobj;
         CurrentScene = sceneName;
         PlayerDirection = direction;
         CurrentDataMode = dataState;

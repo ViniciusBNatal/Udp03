@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class MltJogador
 {
-    public static Dictionary<string, DataPackage> Players = new Dictionary<string, DataPackage>();
+    public static Dictionary<string, InGameData> Players = new Dictionary<string, InGameData>();
     public static string servidor = "";
     private static string meuIp;
     public static UdpClient udpClient = new UdpClient(11000);
@@ -15,6 +15,18 @@ public class MltJogador
     public static ClienteIniciar ClientScript;
     public static ServidorIniciar ServerScript;
     public static GameObject PlayerPrefab => Resources.Load<GameObject>("Player");
+
+    public class InGameData
+    {
+        public DataPackage DataPackage;
+        public GameObject PlayerObj;
+
+        public InGameData(DataPackage package, GameObject gameObject)
+        {
+            DataPackage = package;
+            PlayerObj = gameObject;
+        }
+    }
     public static string ObterMeuIp()
     {
         if (string.IsNullOrEmpty(meuIp))

@@ -30,7 +30,7 @@ public class GameUpdater : MonoBehaviour
             {
                 if (MltJogador.Players.ContainsKey(MltJogador.CurrentIPsRequests[i]))
                 {
-                    switch (MltJogador.Players[MltJogador.CurrentIPsRequests[i]].CurrentDataMode)
+                    switch (MltJogador.Players[MltJogador.CurrentIPsRequests[i]].DataPackage.CurrentDataMode)
                     {
                         case DataPackage.DataState.SpawnPlayer:
                             GenerateNewPlayer(MltJogador.CurrentIPsRequests[i]);
@@ -53,18 +53,18 @@ public class GameUpdater : MonoBehaviour
 
     private void UpdateGame()
     {
-        if (MltJogador.Players.ContainsKey(MltJogador.ObterMeuIp()) && !string.IsNullOrEmpty(MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene) && MltJogador.CurrentScene != MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene)
+        if (MltJogador.Players.ContainsKey(MltJogador.ObterMeuIp()) && !string.IsNullOrEmpty(MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene) && MltJogador.CurrentScene != MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene)
         {
-            if (MltJogador.Players[MltJogador.ObterMeuIp()].CurrentDataMode == DataPackage.DataState.SpawnPlayer)
+            if (MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentDataMode == DataPackage.DataState.SpawnPlayer)
             {
                 _sceneIsLoading = true;
-                _sceneAfterLoad = MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene;
+                _sceneAfterLoad = MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene;
                 AsyncOperation operation = SceneManager.LoadSceneAsync(_sceneAfterLoad, LoadSceneMode.Single);
                 operation.completed += OnSceneLoad;
             }
-            else if (MltJogador.Players[MltJogador.ObterMeuIp()].CurrentDataMode == DataPackage.DataState.RemovePlayer)
+            else if (MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentDataMode == DataPackage.DataState.RemovePlayer)
             {
-                _sceneAfterLoad = MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene;
+                _sceneAfterLoad = MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene;
                 MltJogador.Players.Clear();
                 MltJogador.servidor = null;
                 MltJogador.CurrentIPsRequests.Clear();
@@ -89,9 +89,9 @@ public class GameUpdater : MonoBehaviour
         //for testing
         //float randomVal = UnityEngine.Random.Range(1, 5);
         //player.GetComponent<Transform>().localScale = new Vector3(randomVal, randomVal, randomVal);
-        MltJogador.Players[IP].PlayerObject = player;
-        MltJogador.Players[IP].PlayerMovment = player.GetComponent<PlayerMovment>();
-        if (IP == MltJogador.ObterMeuIp()) MltJogador.Players[IP].PlayerMovment.SetBeingControledLocaly(true);
+        MltJogador.Players[IP].PlayerObj = player;
+        MltJogador.Players[IP].DataPackage.PlayerMovment = player.GetComponent<PlayerMovment>();
+        if (IP == MltJogador.ObterMeuIp()) MltJogador.Players[IP].DataPackage.PlayerMovment.SetBeingControledLocaly(true);
         //MltJogador.Players[IP].SpawnLocation = spawnPoint;
     }
 
@@ -120,7 +120,7 @@ public class GameUpdater : MonoBehaviour
         if (IP != MltJogador.ObterMeuIp())
         {
             _spawnScript.ClearSpawnPointUsage(IP);
-            Destroy(MltJogador.Players[IP].PlayerObject);
+            Destroy(MltJogador.Players[IP].PlayerObj);
             MltJogador.Players.Remove(IP);
         }
         else
@@ -131,6 +131,6 @@ public class GameUpdater : MonoBehaviour
 
     private void UpdatePlayerMovment(string IP)
     {
-        MltJogador.Players[IP].PlayerMovment.SetCurrentDirection(MltJogador.Players[IP].PlayerDirection);
+        MltJogador.Players[IP].DataPackage.PlayerMovment.SetCurrentDirection(MltJogador.Players[IP].DataPackage.PlayerDirection);
     }
 }

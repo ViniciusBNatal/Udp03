@@ -7,7 +7,8 @@ public class PlayerMovment : MonoBehaviour
     private Rigidbody _rb;
     [SerializeField] private float _speed;
     private bool _beingControledLocaly;
-    private Vector3 _currenDirection;
+    private float[] _currenDirection =  new float[3];
+    private Vector3 _dir;
 
     private void Awake()
     {
@@ -23,7 +24,7 @@ public class PlayerMovment : MonoBehaviour
 
     private void FixedUpdate()
     {
-        _rb.velocity = _currenDirection * _speed;
+        _rb.velocity = _dir * _speed;
     }
 
     private void UpdateInputs()
@@ -35,13 +36,24 @@ public class PlayerMovment : MonoBehaviour
             float up = Input.GetKeyDown(KeyCode.Q) ? 1 : 0;
             float down = Input.GetKeyDown(KeyCode.E) ? -1 : 0;
             float movY = up + down;
+
             SetCurrentDirection(new Vector3(movX, movY, movZ).normalized);
         }
     }
 
-    public void SetCurrentDirection(Vector3 dir)
+    public void SetCurrentDirection(float[] dir)
     {
         _currenDirection = dir;
+        _dir = new Vector3(dir[0], dir[1], dir[2]);
+    }
+
+    private void SetCurrentDirection(Vector3 dir)
+    {
+        for(int i = 0; i < _currenDirection.Length; i++)
+        {
+            _currenDirection[i] = dir[i];
+        }
+        _dir = dir;
     }
 
     public void SetBeingControledLocaly(bool beingControled)

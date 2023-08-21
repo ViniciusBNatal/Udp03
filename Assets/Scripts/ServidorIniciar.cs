@@ -61,7 +61,7 @@ public class ServidorIniciar : MonoBehaviour
 
     public void SendStartGame()
     {
-        DataPackage[] datas = MltJogador.Players.Values.ToArray();
+        DataPackage[] datas = MltJogador.Players.Values.Select(x => x.DataPackage).ToArray();
         for (int i = 0; i < datas.Length; i++)
         {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(datas[i].IP), PORT);
@@ -107,14 +107,14 @@ public class ServidorIniciar : MonoBehaviour
         switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
-                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, _dataContainer.CurrentPackageDataBeingProcessed);
+                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null));
                 break;
             case DataPackage.DataState.RemovePlayer:
-                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].CurrentDataMode = DataPackage.DataState.RemovePlayer;
+                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
                 //SendRemovePlayerData();
                 break;
             case DataPackage.DataState.UpdateValues:
-                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;
+                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;
                 break;
                 //case DataPackage.DataState.Neutral:
                 //    break;

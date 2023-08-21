@@ -68,7 +68,7 @@ public class ClienteIniciar : MonoBehaviour
                 {
                     _memoryStream = new MemoryStream();
                     //_dataContainer.CurrentPackageDataBeingProcessed = MltJogador.Players[MltJogador.ObterMeuIp()];
-                    MltJogador.Players[IPs[i]].CurrentDataMode = DataPackage.DataState.RemovePlayer;
+                    MltJogador.Players[IPs[i]].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
                     _binaryFormatter.Serialize(_memoryStream, /*_dataContainer.CurrentPackageDataBeingProcessed*/MltJogador.Players[IPs[i]]);
                     byte[] info = _memoryStream.ToArray();
                     MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
@@ -80,7 +80,7 @@ public class ClienteIniciar : MonoBehaviour
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), 11000);
             _memoryStream = new MemoryStream();
             //_dataContainer.CurrentPackageDataBeingProcessed = MltJogador.Players[MltJogador.ObterMeuIp()];
-            MltJogador.Players[MltJogador.ObterMeuIp()] = GenerateRemovePlayerPackage();
+            MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage = GenerateRemovePlayerPackage();
             _binaryFormatter.Serialize(_memoryStream, /*_dataContainer.CurrentPackageDataBeingProcessed*/MltJogador.Players[MltJogador.ObterMeuIp()]);
             byte[] info = _memoryStream.ToArray();
             MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
@@ -88,7 +88,7 @@ public class ClienteIniciar : MonoBehaviour
         }
     }
 
-    public void MovmentDataCollection(Vector3 direction)
+    public void MovmentDataCollection(float[] direction)
     {
         IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.servidor), 11000);
         _memoryStream = new MemoryStream();
@@ -115,13 +115,13 @@ public class ClienteIniciar : MonoBehaviour
         switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
-                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, _dataContainer.CurrentPackageDataBeingProcessed);
+                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null));
                 break;
             case DataPackage.DataState.RemovePlayer:
-                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].CurrentDataMode = DataPackage.DataState.RemovePlayer;
+                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
                 break;
             case DataPackage.DataState.UpdateValues:
-                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;                
+                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;                
                 break;
                 //case DataPackage.DataState.Neutral:
                 //    break;
@@ -133,8 +133,8 @@ public class ClienteIniciar : MonoBehaviour
     private DataPackage GenerateSpawnPlayerPackage()
     {
         return new DataPackage(MltJogador.ObterMeuIp(),
-            MltJogador.PlayerPrefab, "Jogo",
-            Vector3.zero,
+            "Jogo",
+            null,
             DataPackage.DataState.SpawnPlayer,
             null
             /*Vector3.zero*/);
@@ -143,16 +143,16 @@ public class ClienteIniciar : MonoBehaviour
     private DataPackage GenerateRemovePlayerPackage()
     {
         return new DataPackage(MltJogador.ObterMeuIp(),
-            null, "Entrada",
-            Vector3.zero,
+            "Entrada",
+            null,
             DataPackage.DataState.RemovePlayer,
             null);
     }
 
-    private DataPackage GenerateMovmentPackage(Vector3 direction)
+    private DataPackage GenerateMovmentPackage(float[] direction)
     {
         return new DataPackage(MltJogador.ObterMeuIp(),
-            null, MltJogador.Players[MltJogador.ObterMeuIp()].CurrentScene,
+            MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene,
             direction,
             DataPackage.DataState.UpdateValues,
             null
