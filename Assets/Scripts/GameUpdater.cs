@@ -90,8 +90,8 @@ public class GameUpdater : MonoBehaviour
         //float randomVal = UnityEngine.Random.Range(1, 5);
         //player.GetComponent<Transform>().localScale = new Vector3(randomVal, randomVal, randomVal);
         MltJogador.Players[IP].PlayerObj = player;
-        MltJogador.Players[IP].DataPackage.PlayerMovment = player.GetComponent<PlayerMovment>();
-        if (IP == MltJogador.ObterMeuIp()) MltJogador.Players[IP].DataPackage.PlayerMovment.SetBeingControledLocaly(true);
+        MltJogador.Players[IP].PlayerMovment = player.GetComponent<PlayerMovment>();
+        if (IP == MltJogador.ObterMeuIp()) MltJogador.Players[IP].PlayerMovment.SetBeingControledLocaly(true);
         //MltJogador.Players[IP].SpawnLocation = spawnPoint;
     }
 
@@ -131,6 +131,6 @@ public class GameUpdater : MonoBehaviour
 
     private void UpdatePlayerMovment(string IP)
     {
-        MltJogador.Players[IP].DataPackage.PlayerMovment.SetCurrentDirection(MltJogador.Players[IP].DataPackage.PlayerDirection);
+        MltJogador.Players[IP].PlayerMovment.SetCurrentDirection(MltJogador.Players[IP].DataPackage.PlayerDirection);
     }
 }

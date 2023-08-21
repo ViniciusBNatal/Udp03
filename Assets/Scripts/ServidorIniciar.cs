@@ -107,7 +107,7 @@ public class ServidorIniciar : MonoBehaviour
         switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
-                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null));
+                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null, null));
                 break;
             case DataPackage.DataState.RemovePlayer:
                 MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;

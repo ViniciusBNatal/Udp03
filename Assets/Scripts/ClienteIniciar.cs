@@ -115,7 +115,7 @@ public class ClienteIniciar : MonoBehaviour
         switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
-                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null));
+                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null, null));
                 break;
             case DataPackage.DataState.RemovePlayer:
                 MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
@@ -135,8 +135,7 @@ public class ClienteIniciar : MonoBehaviour
         return new DataPackage(MltJogador.ObterMeuIp(),
             "Jogo",
             null,
-            DataPackage.DataState.SpawnPlayer,
-            null
+            DataPackage.DataState.SpawnPlayer
             /*Vector3.zero*/);
     }
 
@@ -145,8 +144,7 @@ public class ClienteIniciar : MonoBehaviour
         return new DataPackage(MltJogador.ObterMeuIp(),
             "Entrada",
             null,
-            DataPackage.DataState.RemovePlayer,
-            null);
+            DataPackage.DataState.RemovePlayer);
     }
 
     private DataPackage GenerateMovmentPackage(float[] direction)
@@ -154,8 +152,7 @@ public class ClienteIniciar : MonoBehaviour
         return new DataPackage(MltJogador.ObterMeuIp(),
             MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene,
             direction,
-            DataPackage.DataState.UpdateValues,
-            null
+            DataPackage.DataState.UpdateValues            
             /*Vector3.zero*/);
     }
     #endregion

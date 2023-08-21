@@ -12,7 +12,7 @@ public class DataPackage
 {
     public string IP;
     //public GameObject PlayerObject;
-    public PlayerMovment PlayerMovment;
+    //public PlayerMovment PlayerMovment;
     public string CurrentScene;
     public float[] PlayerDirection = new float[3];
     public float[] SpawnLocation = new float[3];
@@ -24,7 +24,7 @@ public class DataPackage
         UpdateValues
         //Neutral
     };    
-    public DataPackage(string ip, /*GameObject gobj,*/ string sceneName, float[] direction, DataState dataState, PlayerMovment playerMovment/*, Vector3 spawnPoint*/)
+    public DataPackage(string ip, /*GameObject gobj,*/ string sceneName, float[] direction, DataState dataState/*/*, PlayerMovment playerMovment*//*, Vector3 spawnPoint*/)
     {
         IP = ip;
         //PlayerObject = gobj;
@@ -32,6 +32,6 @@ public class DataPackage
         PlayerDirection = direction;
         CurrentDataMode = dataState;
         //SpawnLocation = spawnPoint;
-        PlayerMovment = playerMovment;
+        //PlayerMovment = playerMovment;
     }
 }

@@ -21,11 +21,13 @@ public class MltJogador
     {
         public DataPackage DataPackage;
         public GameObject PlayerObj;
+        public PlayerMovment PlayerMovment;
 
-        public InGameData(DataPackage package, GameObject gameObject)
+        public InGameData(DataPackage package, GameObject gameObject, PlayerMovment playerMovment)
         {
             DataPackage = package;
             PlayerObj = gameObject;
+            PlayerMovment = playerMovment;
         }
     }
     public static string ObterMeuIp()
