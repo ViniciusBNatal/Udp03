@@ -107,7 +107,15 @@ public class ClienteIniciar : MonoBehaviour
             _memoryStream = new MemoryStream(MltJogador.udpClient.Receive(ref RemoteIpEndPoint));
             //_dataContainer.CurrentPackageDataBeingProcessed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
             DataPackage package = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
-            if (!MltJogador.Players.ContainsKey(package.IP) || package != MltJogador.Players[RemoteIpEndPoint.Address.ToString()].DataPackage)
+            if(MltJogador.Players.TryGetValue(package.IP, out MltJogador.InGameData data))
+            {
+                if (package != data.DataPackage)
+                {
+                    _currentDataPackage = package;
+                    ProcessData();
+                }
+            }
+            else
             {
                 _currentDataPackage = package;
                 ProcessData();

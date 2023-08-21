@@ -65,7 +65,15 @@ public class ServidorIniciar : MonoBehaviour
             _memoryStream = new MemoryStream(MltJogador.udpClient.Receive(ref RemoteIpEndPoint));
             //_dataContainer.CurrentPackageDataBeingProcessed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
             DataPackage package = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
-            if (!MltJogador.Players.ContainsKey(package.IP) || package != MltJogador.Players[RemoteIpEndPoint.Address.ToString()].DataPackage)
+            if (MltJogador.Players.TryGetValue(package.IP, out MltJogador.InGameData data))
+            {
+                if (package != data.DataPackage)
+                {
+                    _currentDataPackage = package;
+                    ProcessData();
+                }
+            }
+            else
             {
                 _currentDataPackage = package;
                 ProcessData();
@@ -76,9 +84,12 @@ public class ServidorIniciar : MonoBehaviour
 
     public void SendStartGame()
     {
-        DataPackage[] datas = MltJogador.Players.Values.Select(x => x.DataPackage).ToArray();
-        for (int i = 0; i < datas.Length; i++)
+        MltJogador.InGameData[] temp = MltJogador.Players.Values.ToArray();
+        //DataPackage[] datas = MltJogador.Players.Values.Select(x => x.DataPackage).ToArray();
+        DataPackage[] datas = new DataPackage[temp.Length];
+        for (int i = 0; i < temp.Length; i++)
         {
+            datas[i] = temp[i].DataPackage;
             datas[i].CurrentScene = "Jogo";
         }
         for (int i = 0; i < datas.Length; i++)
