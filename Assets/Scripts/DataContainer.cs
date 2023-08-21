@@ -5,7 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class DataContainer : MonoBehaviour
 {
-    public DataPackage CurrentPackageDataBeingProcessed;
+    [HideInInspector] public DataPackage CurrentPackageDataBeingProcessed;
 }
 [System.Serializable]
 public class DataPackage
