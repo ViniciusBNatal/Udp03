@@ -20,10 +20,11 @@ public class ServidorIniciar : MonoBehaviour
     public const int PORT = 11000;
     BinaryFormatter _binaryFormatter = new BinaryFormatter();
     MemoryStream _memoryStream;
-    private DataContainer _dataContainer;
+    //private DataContainer _dataContainer;
     private Thread _thread;
     private const float _sendDataFrequency = .02f;
     private float _timeSinceLastDataSend;
+    private DataPackage _currentDataPackage;
 
     private void Awake()
     {
@@ -33,7 +34,7 @@ public class ServidorIniciar : MonoBehaviour
     void Start()
     {
         if (MltJogador.servidor != MltJogador.ObterMeuIp()) Destroy(this);
-        _dataContainer = GetComponent<DataContainer>();
+        //_dataContainer = GetComponent<DataContainer>();
         _thread = new Thread(ReceberDados);
         _thread.Start();
     }
@@ -50,12 +51,25 @@ public class ServidorIniciar : MonoBehaviour
 
     void ReceberDados()
     {
+        //IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        //while (true)
+        //{
+        //    _memoryStream = new MemoryStream(MltJogador.udpClient.Receive(ref RemoteIpEndPoint));
+        //    _dataContainer.CurrentPackageDataBeingProcessed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
+        //    ProcessData();
+        //}
         IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        //Blocks until a message returns on this socket from a remote host.
         while (true)
         {
             _memoryStream = new MemoryStream(MltJogador.udpClient.Receive(ref RemoteIpEndPoint));
-            _dataContainer.CurrentPackageDataBeingProcessed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
-            ProcessData();
+            //_dataContainer.CurrentPackageDataBeingProcessed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
+            DataPackage package = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
+            if (package != MltJogador.Players[RemoteIpEndPoint.Address.ToString()].DataPackage)
+            {
+                _currentDataPackage = package;
+                ProcessData();
+            }
         }
     }
 
@@ -107,22 +121,39 @@ public class ServidorIniciar : MonoBehaviour
     #region DataGenerators
     public void ProcessData()
     {
-        MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
-        switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
+        switch (_currentDataPackage.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
-                if (!MltJogador.Players.ContainsKey(_dataContainer.CurrentPackageDataBeingProcessed.IP)) MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null, null));
+                /*if (!MltJogador.Players.ContainsKey(_dataContainer.CurrentPackageDataBeingProcessed.IP))*/
+                MltJogador.Players.Add(_currentDataPackage.IP, new MltJogador.InGameData(_currentDataPackage, null, null));
                 break;
             case DataPackage.DataState.RemovePlayer:
-                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
+                MltJogador.Players[_currentDataPackage.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
                 //SendRemovePlayerData();
                 break;
             case DataPackage.DataState.UpdateValues:
-                MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;
+                MltJogador.Players[_currentDataPackage.IP].DataPackage.PlayerDirection = _currentDataPackage.PlayerDirection;
                 break;
                 //case DataPackage.DataState.Neutral:
                 //    break;
         }
+        MltJogador.CurrentIPsRequests.Add(_currentDataPackage.IP);
+        //switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
+        //{
+        //    case DataPackage.DataState.SpawnPlayer:
+        //        /*if (!MltJogador.Players.ContainsKey(_dataContainer.CurrentPackageDataBeingProcessed.IP))*/ MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null, null));
+        //        break;
+        //    case DataPackage.DataState.RemovePlayer:
+        //        MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;
+        //        //SendRemovePlayerData();
+        //        break;
+        //    case DataPackage.DataState.UpdateValues:
+        //        MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;
+        //        break;
+        //        //case DataPackage.DataState.Neutral:
+        //        //    break;
+        //}
+        //MltJogador.CurrentIPsRequests.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP);
     }
     #endregion
 }
