@@ -82,7 +82,7 @@ public class ServidorIniciar : MonoBehaviour
         {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.CurrentIPsRequests[i]), PORT);
             _memoryStream = new MemoryStream();
-            _binaryFormatter.Serialize(_memoryStream, MltJogador.Players[MltJogador.CurrentIPsRequests[i]]);
+            _binaryFormatter.Serialize(_memoryStream, MltJogador.Players[MltJogador.CurrentIPsRequests[i]].DataPackage);
             byte[] info = _memoryStream.ToArray();
             MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
         }
@@ -94,7 +94,7 @@ public class ServidorIniciar : MonoBehaviour
         {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(MltJogador.CurrentIPsRequests[i]), PORT);
             _memoryStream = new MemoryStream();
-            _binaryFormatter.Serialize(_memoryStream, MltJogador.Players[MltJogador.CurrentIPsRequests[i]]);
+            _binaryFormatter.Serialize(_memoryStream, MltJogador.Players[MltJogador.CurrentIPsRequests[i]].DataPackage);
             byte[] info = _memoryStream.ToArray();
             MltJogador.udpClient.Send(info, info.Length, ipEndPoint);
         }
