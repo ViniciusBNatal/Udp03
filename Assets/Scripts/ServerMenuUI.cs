@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 public class ServerMenuUI : MonoBehaviour
 {
@@ -32,8 +33,8 @@ public class ServerMenuUI : MonoBehaviour
         string str = "";
         for (int i = 0; i < MltJogador.CurrentIPsRequests.Count; i++)
         {
-            str = MltJogador.CurrentIPsRequests[i];
-            //str += MltJogador.clientes.Keys.ElementAt(i) + " " + MltJogador.clientes.Values.ElementAt(i) + "\n";
+            //str = MltJogador.CurrentIPsRequests[i];
+            str += MltJogador.Players.Keys.ElementAt(i) + " " + MltJogador.Players.Values.ElementAt(i) + "\n";
         }
         listaClientes.text = str;
     }

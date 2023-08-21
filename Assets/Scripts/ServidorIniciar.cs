@@ -32,8 +32,8 @@ public class ServidorIniciar : MonoBehaviour
 
     void Start()
     {
-        if(MltJogador.servidor != MltJogador.ObterMeuIp()) Destroy(this);
-        _dataContainer.GetComponent<DataContainer>();        
+        if (MltJogador.servidor != MltJogador.ObterMeuIp()) Destroy(this);
+        _dataContainer = GetComponent<DataContainer>();
         _thread = new Thread(ReceberDados);
         _thread.Start();
     }
@@ -41,7 +41,7 @@ public class ServidorIniciar : MonoBehaviour
     private void Update()
     {
         _timeSinceLastDataSend += Time.deltaTime;
-        if(_timeSinceLastDataSend >= _sendDataFrequency)
+        if (_timeSinceLastDataSend >= _sendDataFrequency)
         {
             SendChangePlayerMovment();
             SendRemovePlayerData();
@@ -55,7 +55,7 @@ public class ServidorIniciar : MonoBehaviour
         {
             _memoryStream = new MemoryStream(MltJogador.udpClient.Receive(ref RemoteIpEndPoint));
             _dataContainer.CurrentPackageDataBeingProcessed = (DataPackage)_binaryFormatter.Deserialize(_memoryStream);
-            ProcessData();            
+            ProcessData();
         }
     }
 
@@ -116,8 +116,8 @@ public class ServidorIniciar : MonoBehaviour
             case DataPackage.DataState.UpdateValues:
                 MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].PlayerDirection = _dataContainer.CurrentPackageDataBeingProcessed.PlayerDirection;
                 break;
-            //case DataPackage.DataState.Neutral:
-            //    break;
+                //case DataPackage.DataState.Neutral:
+                //    break;
         }
     }
     #endregion

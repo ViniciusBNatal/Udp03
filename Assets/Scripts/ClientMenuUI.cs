@@ -14,8 +14,8 @@ public class ClientMenuUI : MonoBehaviour
 
     private void Awake()
     {
-        conectar.interactable = true;
-        cancelar.interactable = false;
+        if (conectar) conectar.interactable = true;
+        if (cancelar) cancelar.interactable = false;
     }
 
     public void Conect()
