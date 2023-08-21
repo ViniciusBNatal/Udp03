@@ -64,6 +64,10 @@ public class ServidorIniciar : MonoBehaviour
         DataPackage[] datas = MltJogador.Players.Values.Select(x => x.DataPackage).ToArray();
         for (int i = 0; i < datas.Length; i++)
         {
+            datas[i].CurrentScene = "Jogo";
+        }
+        for (int i = 0; i < datas.Length; i++)
+        {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(datas[i].IP), PORT);
             for (int a = 0; i < datas.Length; a++)
             {
@@ -107,7 +111,7 @@ public class ServidorIniciar : MonoBehaviour
         switch (_dataContainer.CurrentPackageDataBeingProcessed.CurrentDataMode)
         {
             case DataPackage.DataState.SpawnPlayer:
-                MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null, null));
+                if (!MltJogador.Players.ContainsKey(_dataContainer.CurrentPackageDataBeingProcessed.IP)) MltJogador.Players.Add(_dataContainer.CurrentPackageDataBeingProcessed.IP, new MltJogador.InGameData(_dataContainer.CurrentPackageDataBeingProcessed, null, null));
                 break;
             case DataPackage.DataState.RemovePlayer:
                 MltJogador.Players[_dataContainer.CurrentPackageDataBeingProcessed.IP].DataPackage.CurrentDataMode = DataPackage.DataState.RemovePlayer;

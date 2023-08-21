@@ -34,9 +34,7 @@ public class ClienteIniciar : MonoBehaviour
     }
 
     public void Conectar(string serverIP)
-    {
-        Debug.LogWarning("Conectar");
-        //if this machine is the Host, will go directly to precessing data, no need to send data
+    {        //if this machine is the Host, will go directly to precessing data, no need to send data
         if (MltJogador.servidor == MltJogador.ObterMeuIp())
         {
             DataPackage temp = GenerateSpawnPlayerPackage();
@@ -134,7 +132,7 @@ public class ClienteIniciar : MonoBehaviour
     private DataPackage GenerateSpawnPlayerPackage()
     {
         return new DataPackage(MltJogador.ObterMeuIp(),
-            "Jogo",
+            null,
             null,
             DataPackage.DataState.SpawnPlayer
             /*Vector3.zero*/);

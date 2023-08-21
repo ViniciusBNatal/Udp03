@@ -53,7 +53,10 @@ public class GameUpdater : MonoBehaviour
 
     private void UpdateGame()
     {
-        if (MltJogador.Players.ContainsKey(MltJogador.ObterMeuIp()) && !string.IsNullOrEmpty(MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene) && MltJogador.CurrentScene != MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene)
+        if (MltJogador.Players.ContainsKey(MltJogador.ObterMeuIp()) && 
+            !string.IsNullOrEmpty(MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene) && 
+            MltJogador.CurrentScene != MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentScene
+            && !_sceneIsLoading)
         {
             if (MltJogador.Players[MltJogador.ObterMeuIp()].DataPackage.CurrentDataMode == DataPackage.DataState.SpawnPlayer)
             {
