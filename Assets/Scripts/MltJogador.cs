@@ -16,6 +16,7 @@ public class MltJogador
     public static ServidorIniciar ServerScript;
     public static GameObject PlayerPrefab => Resources.Load<GameObject>("Player");
 
+    [System.Serializable]
     public class InGameData
     {
         public DataPackage DataPackage;
